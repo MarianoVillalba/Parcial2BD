@@ -1,0 +1,218 @@
+/*Creacion de tablas:*/
+/*Productos*/
+CREATE TABLE productos (
+    id_producto INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(25) NOT NULL,
+    precio DECIMAL(10, 2) NOT NULL,
+    marca VARCHAR(20),
+    modelo VARCHAR(20),
+    descripcion TEXT,
+    foto VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+/*Historial de precios*/
+CREATE TABLE historial_precios (
+    id_historial INT AUTO_INCREMENT PRIMARY KEY,
+    id_producto INT,
+    precio_anterior DECIMAL(10, 2),
+    precio_nuevo DECIMAL(10, 2),
+    fecha_cambio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    porcentaje_cambio DECIMAL(5, 2),
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
+);
+
+
+/*Clientes*/
+CREATE TABLE clientes (
+    id_cliente INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(25) NOT NULL,
+    email VARCHAR(25) NOT NULL,
+    telefono VARCHAR(20),
+    direccion VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+/*Cuentas corrientes*/
+CREATE TABLE cuentas_corrientes (
+    id_cuenta INT AUTO_INCREMENT PRIMARY KEY,
+    id_cliente INT,
+    debito DECIMAL(10, 2),
+    credito DECIMAL(10, 2),
+    saldo DECIMAL(10, 2),
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente)
+);
+
+
+/*Presupuestos*/
+CREATE TABLE presupuestos (
+    id_presupuesto INT AUTO_INCREMENT PRIMARY KEY,
+    id_cliente INT,
+    fecha_vencimiento DATE,
+    total DECIMAL(10, 2),
+    forma_pago VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente)
+);
+
+/*Detalles de presupuestos*/
+CREATE TABLE detalles_presupuestos (
+    id_detalle INT AUTO_INCREMENT PRIMARY KEY,
+    id_presupuesto INT,
+    id_producto INT,
+    cantidad INT,
+    precio_unitario DECIMAL(10, 2),
+    FOREIGN KEY (id_presupuesto) REFERENCES presupuestos(id_presupuesto),
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
+);
+
+
+/*Pedidos en línea*/
+CREATE TABLE pedidos (
+    id_pedido INT AUTO_INCREMENT PRIMARY KEY,
+    id_cliente INT,
+    estado ENUM('pendiente', 'enviado', 'entregado', 'cancelado') DEFAULT 'pendiente',
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    total DECIMAL(10, 2),
+    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente)
+);
+
+
+/*Detalles de pedidos*/
+CREATE TABLE detalles_pedidos (
+    id_detalle INT AUTO_INCREMENT PRIMARY KEY,
+    id_pedido INT,
+    id_producto INT,
+    cantidad INT,
+    precio_unitario DECIMAL(10, 2),
+    FOREIGN KEY (id_pedido) REFERENCES pedidos(id_pedido),
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
+);
+
+/*INSERT para las tablas que definiste:*/
+/*1. Tabla productos*/
+INSERT INTO productos (nombre, precio, marca, modelo, descripcion, foto) 
+VALUES 
+('Laptop', 1200.50, 'Dell', 'XPS 13', 'Laptop de alta gama con 16GB RAM y 512GB SSD', 'laptop_dell_xps13.jpg'),
+('Smartphone', 800.99, 'Samsung', 'Galaxy S21', 'Teléfono con cámara de alta resolución y pantalla AMOLED', 'samsung_galaxy_s21.jpg'),
+('TV', 500.00, 'Sony', 'Bravia 55"', 'Televisor 4K UHD con HDR', 'sony_bravia_55.jpg');
+
+
+/*2. Tabla historial_precios*/
+INSERT INTO historial_precios (id_producto, precio_anterior, precio_nuevo, porcentaje_cambio) 
+VALUES 
+(1, 1150.00, 1200.50, 4.39),
+(2, 750.99, 800.99, 6.66),
+(3, 450.00, 500.00, 11.11);
+
+
+/*3. Tabla clientes*/
+INSERT INTO clientes (nombre, email, telefono, direccion) 
+VALUES 
+('Agustin Fernandez', 'agusf@gmail.com', '555-1234', 'Calle Falsa 123'),
+('Lucia Rojas', 'luciar@gmail.com', '555-5678', 'Avenida Siempreviva 742'),
+('Mario Lopez', 'mario.l@hotmail.com', '555-9876', 'Boulevard Central 456');
+
+
+/*4. Tabla cuentas_corrientes*/
+INSERT INTO cuentas_corrientes (id_cliente, debito, credito, saldo) 
+VALUES 
+(1, 500.00, 200.00, 300.00),
+(2, 300.00, 100.00, 200.00),
+(3, 800.00, 400.00, 400.00);
+
+
+/*5. Tabla presupuestos*/
+INSERT INTO presupuestos (id_cliente, fecha_vencimiento, total, forma_pago) 
+VALUES 
+(1, '2024-12-15', 1500.50, 'Tarjeta de crédito'),
+(2, '2024-11-30', 950.00, 'Transferencia bancaria'),
+(3, '2024-12-01', 1200.00, 'Efectivo');
+
+
+/*6. Tabla detalles_presupuestos*/
+INSERT INTO detalles_presupuestos (id_presupuesto, id_producto, cantidad, precio_unitario) 
+VALUES 
+(1, 1, 1, 1200.50),
+(2, 2, 2, 800.99),
+(3, 3, 1, 1200.00);
+
+
+/*7. Tabla pedidos*/
+INSERT INTO pedidos (id_cliente, estado, total) 
+VALUES 
+(1, 'pendiente', 1500.50),
+(2, 'enviado', 950.00),
+(3, 'entregado', 1200.00);
+
+
+/*8. Tabla detalles_pedidos*/
+INSERT INTO detalles_pedidos (id_pedido, id_producto, cantidad, precio_unitario) 
+VALUES 
+(1, 1, 1, 1200.50),
+(2, 2, 1, 800.99),
+(3, 3, 1, 500.00);
+
+
+
+/*Consultas*/
+/*1. Consulta con AVG, GROUP BY, ORDER BY, AS y LIMIT, Consulta para obtener el promedio de precio de los productos por marca y listar las 3 marcas más costosas.*/
+SELECT marca, AVG(precio) AS promedio_precio
+FROM productos
+GROUP BY marca
+ORDER BY promedio_precio DESC
+LIMIT 3;
+
+
+/*2. Consulta con IN, MAX, JOIN, y ORDER BY, Obtener los productos cuyo precio es el más alto en los últimos cambios de precios registrados en el historial.*/
+SELECT p.nombre, h.precio_nuevo, h.fecha_cambio
+FROM productos p
+JOIN historial_precios h ON p.id_producto = h.id_producto
+WHERE h.precio_nuevo IN (
+    SELECT MAX(precio_nuevo)
+    FROM historial_precios
+    GROUP BY id_producto
+)
+ORDER BY h.precio_nuevo DESC;
+
+
+/*3. Consulta con DELETE, WHERE, Eliminar los pedidos de clientes que tengan un saldo negativo en su cuenta corriente.*/
+DELETE FROM pedidos
+WHERE id_cliente IN (
+    SELECT c.id_cliente
+    FROM cuentas_corrientes c
+    WHERE c.saldo < 0
+);
+
+
+/*4. Consulta que usa COUNT, JOIN, y GROUP BY, Se quiere contar cuántos productos están asociados a cada presupuesto (es decir, cuántos productos se incluyen en cada presupuesto) y mostrar esta información junto con el nombre del cliente.*/
+SELECT c.nombre, COUNT(dp.id_producto) AS productos_en_presupuesto
+FROM clientes c
+JOIN presupuestos p ON c.id_cliente = p.id_cliente
+JOIN detalles_presupuestos dp ON p.id_presupuesto = dp.id_presupuesto
+GROUP BY c.id_cliente
+ORDER BY productos_en_presupuesto DESC;
+
+
+/*5 Inserción de un nuevo presupuesto basado en productos con precio total mayor a 1000:*/
+INSERT INTO presupuestos (id_cliente, fecha_vencimiento, total, forma_pago)
+SELECT 1, '2024-12-20', SUM(dp.precio_unitario * dp.cantidad), 'Transferencia bancaria'
+FROM productos p
+JOIN detalles_presupuestos dp ON p.id_producto = dp.id_producto
+GROUP BY p.id_producto
+HAVING SUM(dp.precio_unitario * dp.cantidad) > 1000;
+
+
+/*Subconsulta para obtener los productos cuyo precio es mayor al promedio de precios de todos los productos.*/
+SELECT nombre, precio
+FROM productos
+WHERE precio > (
+    SELECT AVG(precio)
+    FROM productos
+);
+SELECT AVG(precio) FROM productos
+
+
